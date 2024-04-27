@@ -1,0 +1,49 @@
+version: "3"
+
+services:
+  mongo:
+    image: mongo:7
+    hostname: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: pass
+    volumes:
+      - ./.mongodb:/data/db
+  mongo-express:
+    image: mongo-express:1
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://root:pass@mongo:27017/
+    depends_on:
+      - mongo
+  bot:
+    build:
+      context: .
+      dockerfile: survey_bot/Dockerfile
+    restart: always
+    hostname: bot
+    env_file:
+      - .env
+    volumes:
+      - ./survey_bot:/app/survey_bot
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+  web:
+    build:
+      context: survey_web
+      dockerfile: survey_web/Dockerfile
+    hostname: web
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./survey_web:/app/survey_web
+    ports:
+      - "80:80"
+    depends_on:
+      - mongo
