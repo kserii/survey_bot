@@ -9,9 +9,9 @@
 
 Собираем образ:
 ```shell
+git clone ...
 cd survey_bot
-docker-compose build .
-docker-compose up -d
+docker-compose -f docker-compose.prod.yml up --build -d
 ```
 
 Все должно работать.
