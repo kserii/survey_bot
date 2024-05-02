@@ -1,11 +1,12 @@
 import asyncio
+from logging import getLogger
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
 
 from survey_bot.const import MONGO_CONNECTION_URL
 
 
-
+logger = getLogger(__name__)
 
 async def ping_server():
     # Replace the placeholder with your Atlas connection string
@@ -15,6 +16,6 @@ async def ping_server():
     # Send a ping to confirm a successful connection
     try:
         await client.admin.command('ping')
-        print("Pinged your deployment. You successfully connected to MongoDB!")
+        logger.debug("Pinged your deployment. You successfully connected to MongoDB!")
     except Exception as e:
-        print(e)
+        logger.exception(e)
