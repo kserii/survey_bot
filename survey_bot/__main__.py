@@ -23,7 +23,7 @@ def main():
 
     app = Application.builder().token(BOT_TOKEN).build()
 
-    logger.debug("Загрузка обработчиков:", handlers)
+    logger.debug("Загрузка обработчиков: %s", handlers)
     app.add_handlers([hadler() for hadler in handlers])
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 

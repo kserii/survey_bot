@@ -1,4 +1,6 @@
 from logging import getLogger
+from typing import Optional
+
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
 
@@ -30,3 +32,11 @@ async def insert_user(user: dict):
     telegram_users_collection = db.get_collection('telegram_users')
     if not await telegram_users_collection.find_one({'id': user['id']}):
         await telegram_users_collection.insert_one(user)
+
+
+async def get_current_survey() -> Optional[dict]:
+    """Получить текущий опрос"""
+    surveys_collection = db.get_collection('surveys')
+    return await surveys_collection.find_one({
+        "is_active": True
+    })
