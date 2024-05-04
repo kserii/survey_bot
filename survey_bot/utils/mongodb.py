@@ -37,6 +37,8 @@ async def insert_user(user: dict):
 async def get_current_survey() -> Optional[dict]:
     """Получить текущий опрос"""
     surveys_collection = db.get_collection('surveys')
-    return await surveys_collection.find_one({
+    survey = await surveys_collection.find_one({
         "is_active": True
     })
+    survey["questions"] = iter(survey["questions"])
+    return survey
