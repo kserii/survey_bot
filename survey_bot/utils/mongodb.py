@@ -40,5 +40,6 @@ async def get_current_survey() -> Optional[dict]:
     survey = await surveys_collection.find_one({
         "is_active": True
     })
+    survey["questions_count"] = len(survey["questions"])
     survey["questions"] = iter(survey["questions"])
     return survey

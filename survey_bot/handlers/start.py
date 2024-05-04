@@ -3,9 +3,11 @@ from logging import getLogger
 from telegram.ext import BaseHandler, CommandHandler, CallbackContext
 from telegram import Update
 
-from survey_bot.utils.mongodb import insert_user, get_current_survey
+from survey_bot.utils.mongodb import insert_user
 
 logger = getLogger(__name__)
+
+WELLCOME_TEXT = "Привет! Чтобы пройти опрос пиши: /vote"
 
 
 def start_command_handler() -> BaseHandler:
@@ -13,11 +15,6 @@ def start_command_handler() -> BaseHandler:
 
     async def handler(update: Update, ctx: CallbackContext):
         await insert_user(update.effective_user.to_dict())
-        current_survey = await get_current_survey()
-        # TODO реализовать очитску или сохранение данных
-        #  https://github.com/python-telegram-bot/python-telegram-bot/wiki/Storing-bot%2C-user-and-chat-related-data
-        ctx.user_data['survey'] = current_survey
-        logger.debug(ctx.user_data)
-        await update.message.reply_text(text="I'm a bot, please talk to me!")
+        await update.message.reply_text(WELLCOME_TEXT)
 
     return CommandHandler("start", handler)
