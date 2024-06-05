@@ -1,3 +1,4 @@
+import datetime
 from logging import getLogger
 from typing import Optional
 
@@ -5,11 +6,18 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
 
 from survey_bot.const import MONGO_CONNECTION_URL
+from survey_bot.utils.types import BotOptions, Survey, User
 
 logger = getLogger(__name__)
 
 client = AsyncIOMotorClient(MONGO_CONNECTION_URL)
 db = client.get_database('survey_bot')
+
+# Collections
+SurveysCollection = db.get_collection('surveys')
+TelegramUsersCollection = db.get_collection('telegram_users')
+AnswersCollection = db.get_collection('answers')
+OptionsCollection = db.get_collection('options')
 
 
 async def ping_server():
@@ -27,19 +35,24 @@ async def ping_server():
         test_client.close()
 
 
-async def insert_user(user: dict):
+async def insert_user(user: User):
     """Добавляет в базу одного уникального пользователя"""
-    telegram_users_collection = db.get_collection('telegram_users')
-    if not await telegram_users_collection.find_one({'id': user['id']}):
-        await telegram_users_collection.insert_one(user)
+    if not await TelegramUsersCollection.find_one({'id': user['id']}):
+        await TelegramUsersCollection.insert_one(user)
 
 
-async def get_current_survey() -> Optional[dict]:
+async def get_current_survey() -> Optional[Survey]:
     """Получить текущий опрос"""
-    surveys_collection = db.get_collection('surveys')
-    survey = await surveys_collection.find_one({
-        "is_active": True
+    options = get_options()
+    survey = await SurveysCollection.find_one({
+        'id': options['active_survey']
     })
-    survey["questions_count"] = len(survey["questions"])
-    survey["questions"] = iter(survey["questions"])
+    survey['questions_count'] = len(survey.get('questions', []))
+    survey['questions'] = iter(survey.get('questions', []))
     return survey
+
+
+async def get_options() -> Optional[BotOptions]:
+    """Получает состояние и настройки бота"""
+    options = await OptionsCollection.find_one()
+    return options

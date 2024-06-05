@@ -16,6 +16,7 @@ async def send_notification(message: str, user: int):
 
 async def send_notifications(message: str, users: list[int]):
     """Отправляет сообщение списку пользователей"""
+    # TODO ограничить количество запросов
     result = await asyncio.gather(
         *asyncio.as_completed(map(
             lambda user: send_notification(message, user),
