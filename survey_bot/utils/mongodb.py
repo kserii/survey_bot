@@ -66,3 +66,11 @@ async def save_answers(user: User, survey: Survey, answers: List[Answer]):
         'survey_id': survey['id']
     }
     await AnswersCollection.insert_one(user_answers)
+
+
+async def select_answer(user_id: int, survey_id: int) -> Optional[UserAnswers]:
+    answer: UserAnswers = await AnswersCollection.find_one({
+        'user_id': user_id,
+        'survey_id': survey_id
+    })
+    return answer

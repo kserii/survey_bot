@@ -4,7 +4,7 @@ from telegram.ext import BaseHandler, CommandHandler, CallbackContext
 from telegram import Update
 
 from survey_bot.utils.send_next_message import send_next_message
-from survey_bot.utils.mongodb import get_current_survey
+from survey_bot.utils.mongodb import get_current_survey, select_answer
 
 logger = getLogger(__name__)
 
@@ -19,13 +19,15 @@ def vote_command_handler() -> BaseHandler:
         # TODO реализовать очитску или сохранение данных
         #  https://github.com/python-telegram-bot/python-telegram-bot/wiki/Storing-bot%2C-user-and-chat-related-data
         current_survey = await get_current_survey()
-
-        if 'survey' in ctx.user_data and\
-                current_survey == ctx.user_data['survey']:
+        answer = await select_answer(
+            update.effective_user.id,
+            current_survey['id']
+        )
+        if answer:
             await update.message.reply_text(ALREADY_COMPLETE_SURVEY)
             return
 
-        ctx.user_data['survey'] = await get_current_survey()
+        ctx.user_data['survey'] = current_survey
         logger.debug('Current survey: %s', ctx.user_data['survey'])
 
         if ctx.user_data['survey']:
