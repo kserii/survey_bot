@@ -19,6 +19,11 @@ def vote_command_handler() -> BaseHandler:
         # TODO реализовать очитску или сохранение данных
         #  https://github.com/python-telegram-bot/python-telegram-bot/wiki/Storing-bot%2C-user-and-chat-related-data
         current_survey = await get_current_survey()
+
+        if not current_survey:
+            await update.message.reply_text(DONT_HAVE_ACTIVE_SURVEYS)
+            return
+
         answer = await select_answer(
             update.effective_user.id,
             current_survey['id']
@@ -30,17 +35,15 @@ def vote_command_handler() -> BaseHandler:
         ctx.user_data['survey'] = current_survey
         logger.debug('Current survey: %s', ctx.user_data['survey'])
 
-        if ctx.user_data['survey']:
-            # Счетчик текущего вопроса. Когда дойдет до конца - опрос окночен
-            ctx.user_data['question_counter'] = iter(
-                range(
-                    len(ctx.user_data['survey']['questions'])
-                )
+        # Счетчик текущего вопроса. Когда дойдет до конца - опрос окночен
+        ctx.user_data['question_counter'] = iter(
+            range(
+                len(ctx.user_data['survey']['questions'])
             )
-            await send_next_message(ctx, update.message.chat_id,
-                                    ctx.user_data['survey'],
-                                    update.effective_user.to_dict())
-        else:
-            await update.message.reply_text(DONT_HAVE_ACTIVE_SURVEYS)
+        )
+
+        await send_next_message(ctx, update.message.chat_id,
+                                ctx.user_data['survey'],
+                                update.effective_user.to_dict())
 
     return CommandHandler("vote", handler)
