@@ -1,12 +1,12 @@
 import datetime
 from logging import getLogger
-from typing import Optional
+from typing import Optional, List
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
 
 from survey_bot.const import MONGO_CONNECTION_URL
-from survey_bot.utils.types import BotOptions, Survey, User
+from survey_bot.utils.types import BotOptions, Survey, User, UserAnswers, Answer
 
 logger = getLogger(__name__)
 
@@ -43,16 +43,26 @@ async def insert_user(user: User):
 
 async def get_current_survey() -> Optional[Survey]:
     """Получить текущий опрос"""
-    options = get_options()
-    survey = await SurveysCollection.find_one({
+    options = await get_options()
+    survey: Survey = await SurveysCollection.find_one({
         'id': options['active_survey']
     })
-    survey['questions_count'] = len(survey.get('questions', []))
-    survey['questions'] = iter(survey.get('questions', []))
     return survey
 
 
 async def get_options() -> Optional[BotOptions]:
     """Получает состояние и настройки бота"""
-    options = await OptionsCollection.find_one()
+    options = await OptionsCollection.find_one({'name': 'options'})
+    logger.debug('Bot options: %s', options)
     return options
+
+
+async def save_answers(user: User, survey: Survey, answers: List[Answer]):
+    logger.debug('User: %s\n'
+                 'Answers: %s', user, answers)
+    user_answers: UserAnswers = {
+        'answers': answers,
+        'user_id': user['id'],
+        'survey_id': survey['id']
+    }
+    await AnswersCollection.insert_one(user_answers)

@@ -3,14 +3,27 @@ from typing import TypedDict, Optional, List, Literal
 
 
 class Question(TypedDict):
-    name: str  # Вопрос
-    answers: Optional[List[str]]  # Ответы. Если None, значит ответ произвольный.
+    question_name: str  # Вопрос
+    question_options: Optional[List[str]]  # Ответы. Если None, значит ответ произвольный.
 
 
 class Survey(TypedDict):
     id: int
     questions: List[Question]  # Вопросы.
     created_at: datetime
+
+
+class Answer(TypedDict):
+    """Вопрос и ответ на него"""
+    question: str
+    answer: str
+
+
+class UserAnswers(TypedDict):
+    """Ответы пользователя опроса"""
+    survey_id: int
+    user_id: int
+    answers: List[Answer]
 
 
 class BotOptions(TypedDict):

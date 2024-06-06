@@ -4,6 +4,7 @@ from telegram.ext import BaseHandler, CallbackContext, CallbackQueryHandler
 from telegram import Update
 
 from survey_bot.utils.send_next_message import send_next_message
+from survey_bot.utils.types import Answer, Survey
 
 logger = getLogger(__name__)
 
@@ -12,16 +13,31 @@ def question_inline_command_handler() -> BaseHandler:
     """Обработка ответов на вопросы с ответами (inline keyboard)"""
 
     async def handler(update: Update, ctx: CallbackContext):
-        survey = ctx.user_data['survey']
-        logger.debug(survey)
+        survey: Survey = ctx.user_data['survey']
+
         query = update.callback_query
-        # TODO запись в базу
-        question_id, answer = query.data.split(',', 1)
-        question_id = int(question_id)
-        logger.debug(query.message)
+        question_id, answer_id = map(int, query.data.split(',', 1))
+
+        question_value: str = survey['questions'][question_id]['question_name']
+        answer_value: str = survey['questions'][question_id]['question_options'][answer_id]
+
+        answer: Answer = {
+            'question': question_value,
+            'answer': answer_value
+        }
+
+        if 'answers' not in ctx.user_data:
+            ctx.user_data['answers'] = [answer]
+        else:
+            ctx.user_data['answers'].append(answer)
+
+        logger.info('Answers for %s: %s', update.effective_user.id, ctx.user_data['answers'])
+        logger.debug('WHAT IS THIS? %s', query.message)
 
         await query.answer()
         await query.delete_message()
-        await send_next_message(ctx, query.message.chat.id, survey)
+        await send_next_message(ctx, query.message.chat.id,
+                                survey,
+                                update.effective_user.to_dict())
 
     return CallbackQueryHandler(handler)
