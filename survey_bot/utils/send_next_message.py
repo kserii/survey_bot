@@ -9,18 +9,25 @@ from survey_bot.utils.types import User, Survey, Question
 
 logger = getLogger(__name__)
 
-
 SURVEY_FINISH_TEXT = 'Опрос окончен. Спасибо за уделенное время!'
 
 
 async def send_next_message(ctx: CallbackContext, chat_id: int, survey: Survey, user: User):
     try:
         question_id = next(ctx.user_data['question_counter'])
-        current_question = survey['questions'][question_id]
+        current_question: Question = survey['questions'][question_id]
+
+        ctx.user_data['current_question_id'] = question_id
+
         keyboard = make_inline_keyboard(current_question, question_id)
         await ctx.bot.send_message(
             chat_id,
-            '[%s/%s]. %s' % (question_id + 1, len(survey['questions']), current_question['question_name']),
+            '[%s/%s]. %s%s' % (
+                question_id + 1,
+                len(survey['questions']),
+                current_question['question_name'],
+                '\nНапишите ваш ответ:' if not current_question['question_options'] else ''
+            ),
             reply_markup=keyboard
         )
     except StopIteration:

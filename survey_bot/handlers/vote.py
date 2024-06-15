@@ -42,8 +42,6 @@ def vote_command_handler() -> BaseHandler:
             )
         )
 
-        await send_next_message(ctx, update.message.chat_id,
-                                ctx.user_data['survey'],
-                                update.effective_user.to_dict())
+        await send_next_message(ctx, update.message.chat_id, ctx.user_data['survey'], update.effective_user.to_dict())
 
     return CommandHandler("vote", handler)

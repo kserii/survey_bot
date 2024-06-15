@@ -36,8 +36,6 @@ def question_inline_command_handler() -> BaseHandler:
 
         await query.answer()
         await query.delete_message()
-        await send_next_message(ctx, query.message.chat.id,
-                                survey,
-                                update.effective_user.to_dict())
+        await send_next_message(ctx, query.message.chat.id, survey, update.effective_user.to_dict())
 
     return CallbackQueryHandler(handler)
