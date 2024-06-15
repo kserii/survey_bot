@@ -15,7 +15,3 @@ docker-compose -f docker-compose.prod.yml up --build -d
 ```
 
 Все должно работать.
-
-## Проблемы
-
-О ошибках сообщайте по почте: konstantin.serez@gmail.com
