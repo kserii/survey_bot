@@ -4,7 +4,7 @@ from telegram.ext import BaseHandler, CommandHandler, CallbackContext
 from telegram import Update
 
 from survey_bot.utils.send_next_message import send_next_message
-from survey_bot.utils.mongodb import get_current_survey, select_answer
+from survey_bot.utils.mongodb import get_current_survey, select_answers
 
 logger = getLogger(__name__)
 
@@ -24,7 +24,7 @@ def vote_command_handler() -> BaseHandler:
             await update.message.reply_text(DONT_HAVE_ACTIVE_SURVEYS)
             return
 
-        answer = await select_answer(
+        answer = await select_answers(
             update.effective_user.id,
             current_survey['id']
         )

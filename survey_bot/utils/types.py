@@ -33,7 +33,9 @@ class BotOptions(TypedDict):
 
 class User(TypedDict):
     id: int
-    first_name: str
-    is_bot: bool
-    language_code: str
+    is_admin: bool
+    first_name: Optional[str]
+    last_name: Optional[str]
+    is_bot: Optional[bool]
+    language_code: Optional[str]
     username: Optional[str]
