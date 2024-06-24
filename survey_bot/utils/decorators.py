@@ -1,5 +1,5 @@
 import functools
-from typing import Callable, Awaitable
+from typing import Callable, Awaitable, Literal
 
 from telegram import Update
 from telegram.ext import CallbackContext
@@ -9,7 +9,7 @@ from survey_bot.utils.mongodb import select_user
 NO_HAVE_PERMISSION_TEXT = "Нет доступа!"
 
 
-def check_permission(access_level: str = 'User'):
+def check_permissions(access_level: Literal['User', 'Admin'] = 'User'):
     """Декоратор для проверки прав доступа"""
 
     def decorator(func: Callable[..., Awaitable]):

@@ -6,7 +6,7 @@ from typing import List
 from telegram.ext import BaseHandler, CommandHandler, CallbackContext
 from telegram import Update, InputFile
 
-from survey_bot.utils.decorators import check_permission
+from survey_bot.utils.decorators import check_permissions
 from survey_bot.utils.mongodb import select_all_answers_by_survey, get_current_survey
 from survey_bot.utils.types import UserAnswers
 
@@ -67,7 +67,7 @@ async def _export_json(update: Update, answers: List[UserAnswers], current_surve
 def export_json_command_handler() -> BaseHandler:
     """Обработка комманды /export. Отправляет отчет об ответах на текущий опрос"""
 
-    @check_permission(access_level='Admin')
+    @check_permissions(access_level='Admin')
     async def handler(update: Update, ctx: CallbackContext):
         current_survey = await get_current_survey()
         answers = await select_all_answers_by_survey(survey_id=current_survey['id'])
