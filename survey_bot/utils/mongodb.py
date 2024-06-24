@@ -4,7 +4,7 @@ from typing import Optional, List
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
 
-from survey_bot.const import MONGO_CONNECTION_URL
+from survey_bot.const import MONGO_CONNECTION_URL, BOT_OWNER_IDS
 from survey_bot.utils.types import BotOptions, Survey, User, UserAnswers, Answer
 
 logger = getLogger(__name__)
@@ -36,8 +36,12 @@ async def ping_server():
 
 async def insert_user(user: User):
     """Добавляет в базу пользователя. Если уже есть - не будет добавлен"""
-    if not await TelegramUsersCollection.find_one({'id': user['id']}):
-        await TelegramUsersCollection.insert_one(user)
+    user_from_db = await TelegramUsersCollection.find_one({'id': user['id']})
+    if not user_from_db:
+        await TelegramUsersCollection.insert_one({
+            **user,
+            'is_admin': user['id'] in BOT_OWNER_IDS
+        })
 
 
 async def select_user(telegram_id: int) -> Optional[User]:
@@ -84,5 +88,31 @@ async def select_answers(user_id: int, survey_id: int) -> Optional[UserAnswers]:
 
 async def select_all_answers_by_survey(survey_id: int) -> List[UserAnswers]:
     """Получение ответов по id пользователя и id опроса"""
-    cursor = AnswersCollection.find({'survey_id': survey_id}, {'_id': 0})
-    return [i async for i in cursor]
+    pipeline = [
+        {
+            '$match': {'survey_id': survey_id}
+        },
+        {
+            '$lookup': {
+                'from': 'telegram_users',  # The collection to join
+                'localField': 'user_id',  # Field from the answers collection
+                'foreignField': 'id',  # Field from the telegram_users collection
+                'as': 'user_info'  # Output array field
+            }
+        },
+        {
+            '$project': {  # Exclude the _id field
+                '_id': 0,
+                'user_info': {
+                    '_id': 0
+                }
+            }
+        }
+    ]
+
+    results = []
+    async for doc in AnswersCollection.aggregate(pipeline):
+        results.append(UserAnswers(**doc))
+
+    return results
+

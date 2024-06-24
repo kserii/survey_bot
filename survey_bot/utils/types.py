@@ -19,18 +19,6 @@ class Answer(TypedDict):
     answer: str
 
 
-class UserAnswers(TypedDict):
-    """Ответы пользователя опроса"""
-    survey_id: int
-    user_id: int
-    answers: List[Answer]
-
-
-class BotOptions(TypedDict):
-    name: Literal["options"]
-    active_survey: int  # Текущий опрос
-
-
 class User(TypedDict):
     id: int
     is_admin: bool
@@ -39,3 +27,16 @@ class User(TypedDict):
     is_bot: Optional[bool]
     language_code: Optional[str]
     username: Optional[str]
+
+
+class UserAnswers(TypedDict):
+    """Ответы пользователя опроса"""
+    survey_id: int
+    user_id: int
+    answers: List[Answer]
+    user_info: Optional[List[User]]
+
+
+class BotOptions(TypedDict):
+    name: Literal["options"]
+    active_survey: int  # Текущий опрос
