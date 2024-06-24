@@ -16,8 +16,6 @@ def vote_command_handler() -> BaseHandler:
     """Обработка комманды /vote. Участие в опросе"""
 
     async def handler(update: Update, ctx: CallbackContext):
-        # TODO реализовать очитску или сохранение данных
-        #  https://github.com/python-telegram-bot/python-telegram-bot/wiki/Storing-bot%2C-user-and-chat-related-data
         current_survey = await get_current_survey()
 
         if not current_survey:

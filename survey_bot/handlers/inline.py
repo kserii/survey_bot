@@ -21,15 +21,12 @@ def question_inline_command_handler() -> BaseHandler:
         question_value: str = survey['questions'][question_id]['question_name']
         answer_value: str = survey['questions'][question_id]['question_options'][answer_id]
 
-        answer: Answer = {
+        answer = {
             'question': question_value,
             'answer': answer_value
         }
 
-        if 'answers' not in ctx.user_data:
-            ctx.user_data['answers'] = [answer]
-        else:
-            ctx.user_data['answers'].append(answer)
+        ctx.user_data['answers'] = ctx.user_data['answers'] + [answer] if 'answers' in ctx.user_data else [answer]
 
         logger.info('Answers for %s: %s', update.effective_user.id, ctx.user_data['answers'])
         logger.debug('WHAT IS THIS? %s', query.message)
