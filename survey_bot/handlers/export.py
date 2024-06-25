@@ -24,7 +24,7 @@ def _get_username(user_answers: UserAnswers) -> str:
 
     username = user_info.get('username')
     if username:
-        return username
+        return f'@{username}'
 
     first_name = user_info.get('first_name', '')
     last_name = user_info.get('last_name', '')
