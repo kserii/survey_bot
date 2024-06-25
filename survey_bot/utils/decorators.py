@@ -4,7 +4,7 @@ from typing import Callable, Awaitable, Literal
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from survey_bot.utils.mongodb import select_user, get_current_survey
+from survey_bot.utils.mongodb import select_user, get_current_survey, insert_user
 
 NO_HAVE_PERMISSION_TEXT = "Нет доступа!"
 
@@ -36,7 +36,10 @@ def check_context(func: Callable[..., Awaitable]):
     @functools.wraps(func)
     async def wrapper(update: Update, ctx: CallbackContext, *args, **kwargs):
         if 'user' not in ctx.user_data:
-            ctx.user_data['user'] = await select_user(update.effective_user.id)
+            user = await select_user(update.effective_user.id)
+            if not user:
+                await insert_user(update.effective_user.to_dict())
+            ctx.user_data['user'] = user
 
         if 'survey' not in ctx.user_data:
             ctx.user_data['survey'] = await get_current_survey()
