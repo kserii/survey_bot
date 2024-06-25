@@ -23,18 +23,5 @@ services:
       - ./survey_bot:/app/survey_bot
     depends_on:
       - mongo
-#  web:
-#    build:
-#      context: survey_web
-#      dockerfile: Dockerfile
-#    hostname: web
-#    env_file:
-#      - .env
-#    volumes:
-#      - ./survey_web:/app/survey_web
-#    ports:
-#      - "3000:3000"
-#    depends_on:
-#      - mongo
 volumes:
   mongodata:
