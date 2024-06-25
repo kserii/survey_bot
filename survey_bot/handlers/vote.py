@@ -31,7 +31,6 @@ def vote_command_handler() -> BaseHandler:
             return
 
         ctx.user_data['survey'] = current_survey
-        logger.debug('Current survey: %s', ctx.user_data['survey'])
 
         # Счетчик текущего вопроса. Когда дойдет до конца - опрос окночен
         ctx.user_data['question_counter'] = iter(

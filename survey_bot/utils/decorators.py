@@ -4,7 +4,7 @@ from typing import Callable, Awaitable, Literal
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from survey_bot.utils.mongodb import select_user
+from survey_bot.utils.mongodb import select_user, get_current_survey
 
 NO_HAVE_PERMISSION_TEXT = "Нет доступа!"
 
@@ -26,4 +26,31 @@ def check_permissions(access_level: Literal['User', 'Admin'] = 'User'):
             return result
 
         return wrapper
+
     return decorator
+
+
+def check_context(func: Callable[..., Awaitable]):
+    """Декоратор для проверки контекстных переменных"""
+
+    @functools.wraps(func)
+    async def wrapper(update: Update, ctx: CallbackContext, *args, **kwargs):
+        if 'user' not in ctx.user_data:
+            ctx.user_data['user'] = await select_user(update.effective_user.id)
+
+        if 'survey' not in ctx.user_data:
+            ctx.user_data['survey'] = await get_current_survey()
+
+        if 'answers' not in ctx.user_data:
+            ctx.user_data['answers'] = []
+
+        if 'question_counter' not in ctx.user_data:
+            ctx.user_data['question_counter'] = None
+
+        if 'current_question_id' not in ctx.user_data:
+            ctx.user_data['current_question_id'] = None
+
+        result = await func(update, ctx, *args, **kwargs)
+        return result
+
+    return wrapper

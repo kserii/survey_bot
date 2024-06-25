@@ -3,8 +3,9 @@ from logging import getLogger
 from telegram.ext import BaseHandler, CallbackContext, CallbackQueryHandler
 from telegram import Update
 
+from survey_bot.utils.decorators import check_context
 from survey_bot.utils.send_next_message import send_next_message
-from survey_bot.utils.types import Answer, Survey
+from survey_bot.utils.types import Survey
 
 logger = getLogger(__name__)
 
@@ -12,6 +13,7 @@ logger = getLogger(__name__)
 def question_inline_command_handler() -> BaseHandler:
     """Обработка ответов на вопросы с ответами (inline keyboard)"""
 
+    @check_context
     async def handler(update: Update, ctx: CallbackContext):
         survey: Survey = ctx.user_data['survey']
 
@@ -26,10 +28,9 @@ def question_inline_command_handler() -> BaseHandler:
             'answer': answer_value
         }
 
-        ctx.user_data['answers'] = ctx.user_data['answers'] + [answer] if 'answers' in ctx.user_data else [answer]
+        logger.info('Получен ответ от пользователя %s: %s', update.effective_user.id, answer)
 
-        logger.info('Answers for %s: %s', update.effective_user.id, ctx.user_data['answers'])
-        logger.debug('WHAT IS THIS? %s', query.message)
+        ctx.user_data['answers'].append(answer)
 
         await query.answer()
         await query.delete_message()
