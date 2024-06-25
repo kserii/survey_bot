@@ -4,7 +4,7 @@ from telegram.ext import BaseHandler, CallbackContext, CallbackQueryHandler
 from telegram import Update
 
 from survey_bot.utils.decorators import check_context
-from survey_bot.utils.send_next_message import send_next_message
+from survey_bot.utils.next_message import next_message
 from survey_bot.utils.types import Survey
 
 logger = getLogger(__name__)
@@ -34,6 +34,6 @@ def question_inline_command_handler() -> BaseHandler:
 
         await query.answer()
         await query.delete_message()
-        await send_next_message(ctx, query.message.chat.id, survey, update.effective_user.to_dict())
+        await next_message(update, ctx)
 
     return CallbackQueryHandler(handler)

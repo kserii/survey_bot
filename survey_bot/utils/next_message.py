@@ -1,27 +1,28 @@
 from logging import getLogger
 from typing import Optional
 
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.ext import CallbackContext
 
 from survey_bot.utils.mongodb import save_answers
-from survey_bot.utils.types import User, Survey, Question
+from survey_bot.utils.types import Question
 
 logger = getLogger(__name__)
 
 SURVEY_FINISH_TEXT = 'Опрос окончен. Спасибо за уделенное время!'
 
 
-async def send_next_message(ctx: CallbackContext, chat_id: int, survey: Survey, user: User):
+async def next_message(update: Update, ctx: CallbackContext):
+    survey = ctx.user_data['survey']
+
     try:
         question_id = next(ctx.user_data['question_counter'])
-        current_question: Question = survey['questions'][question_id]
-
         ctx.user_data['current_question_id'] = question_id
 
+        current_question: Question = survey['questions'][question_id]
         keyboard = make_inline_keyboard(current_question, question_id)
-        await ctx.bot.send_message(
-            chat_id,
+
+        await update.message.reply_text(
             '[%s/%s]. %s%s' % (
                 question_id + 1,
                 len(survey['questions']),
@@ -31,9 +32,9 @@ async def send_next_message(ctx: CallbackContext, chat_id: int, survey: Survey, 
             reply_markup=keyboard
         )
     except StopIteration:
-        await save_answers(user, survey, ctx.user_data['answers'])
+        await save_answers(update.effective_user.to_dict(), survey, ctx.user_data['answers'])
         ctx.user_data['answers'].clear()
-        await ctx.bot.send_message(chat_id, SURVEY_FINISH_TEXT)
+        await update.message.reply_text(SURVEY_FINISH_TEXT)
 
 
 def make_inline_keyboard(question: Question, question_id: int) -> Optional[InlineKeyboardMarkup]:
@@ -53,7 +54,5 @@ def make_inline_keyboard(question: Question, question_id: int) -> Optional[Inlin
         )]
         for answer_id, answer in enumerate(answers)
     ]
-
-    logger.debug('Inline keyboard: %s', keyboard)
 
     return InlineKeyboardMarkup(keyboard)

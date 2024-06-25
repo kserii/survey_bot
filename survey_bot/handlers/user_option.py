@@ -4,7 +4,7 @@ from telegram.ext import BaseHandler, CallbackContext, MessageHandler, filters
 from telegram import Update
 
 from survey_bot.utils.decorators import check_context
-from survey_bot.utils.send_next_message import send_next_message
+from survey_bot.utils.next_message import next_message
 from survey_bot.utils.types import Answer, Survey, Question
 
 logger = getLogger(__name__)
@@ -36,6 +36,6 @@ def user_option_command_handler() -> BaseHandler:
 
         ctx.user_data['answers'].append(answer)
 
-        await send_next_message(ctx, update.message.chat.id, survey, update.effective_user.to_dict())
+        await next_message(update, ctx)
 
     return MessageHandler(filters.TEXT & ~filters.COMMAND, handler)

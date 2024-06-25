@@ -3,7 +3,7 @@ from logging import getLogger
 from telegram.ext import BaseHandler, CommandHandler, CallbackContext
 from telegram import Update
 
-from survey_bot.utils.send_next_message import send_next_message
+from survey_bot.utils.next_message import next_message
 from survey_bot.utils.mongodb import get_current_survey, select_answers
 
 logger = getLogger(__name__)
@@ -39,6 +39,6 @@ def vote_command_handler() -> BaseHandler:
             )
         )
 
-        await send_next_message(ctx, update.message.chat_id, ctx.user_data['survey'], update.effective_user.to_dict())
+        await next_message(update, ctx)
 
     return CommandHandler("vote", handler)
