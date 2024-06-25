@@ -8,7 +8,7 @@ from survey_bot.utils.mongodb import insert_user, select_user
 
 logger = getLogger(__name__)
 
-WELLCOME_TEXT = "Привет! Чтобы пройти опрос пиши: /vote"
+WELLCOME_TEXT = "Привет! Чтобы пройти опрос пиши:\n/vote"
 
 
 def start_command_handler() -> BaseHandler:
