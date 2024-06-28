@@ -22,7 +22,7 @@ async def next_message(update: Update, ctx: CallbackContext):
         current_question: Question = survey['questions'][question_id]
         keyboard = make_inline_keyboard(current_question, question_id)
 
-        await update.message.reply_text(
+        await update.effective_chat.send_message(
             '[%s/%s]. %s%s' % (
                 question_id + 1,
                 len(survey['questions']),
@@ -34,7 +34,7 @@ async def next_message(update: Update, ctx: CallbackContext):
     except StopIteration:
         await save_answers(update.effective_user.to_dict(), survey, ctx.user_data['answers'])
         ctx.user_data['answers'].clear()
-        await update.message.reply_text(SURVEY_FINISH_TEXT)
+        await update.effective_chat.send_message(SURVEY_FINISH_TEXT)
 
 
 def make_inline_keyboard(question: Question, question_id: int) -> Optional[InlineKeyboardMarkup]:
