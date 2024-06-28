@@ -69,7 +69,7 @@ async def save_answers(user: User, survey: Survey, answers: List[Answer]):
     """Сохраняет ответы в базу данных"""
     logger.debug('User: %s\n'
                  'Answers: %s', user, answers)
-    user_answers: UserAnswers = {
+    user_answers = {
         'answers': answers,
         'user_id': user['id'],
         'survey_id': survey['id']
@@ -116,3 +116,10 @@ async def select_all_answers_by_survey(survey_id: int) -> List[UserAnswers]:
 
     return results
 
+
+async def insert_new_survey_and_update_current(survey: Survey):
+    if survey['id'] == -1:
+        max_doc = await SurveysCollection.find_one(sort=[('id', -1)])
+        survey['id'] = max_doc['id'] + 1
+    await SurveysCollection.insert_one(survey)
+    await OptionsCollection.update_one({'name': 'options'}, {"$set": {'active_survey': survey['id']}})
