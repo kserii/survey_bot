@@ -1,3 +1,6 @@
+import csv
+import io
+import traceback
 import json
 from datetime import datetime
 from logging import getLogger
@@ -13,6 +16,7 @@ from survey_bot.utils.types import UserAnswers
 logger = getLogger(__name__)
 
 NO_HAVE_ANSWERS_TEXT = "Пока нет ответов по данному опросу"
+ERROR_WHILE_MAKE_CSV = "В процессе создание .CSV произошла ошибка"
 
 
 def _get_username(user_answers: UserAnswers) -> str:
@@ -33,6 +37,33 @@ def _get_username(user_answers: UserAnswers) -> str:
         return '%s %s' % (first_name, last_name)
 
     return str(user_answers['user_id'])
+
+
+async def _export_csv(update: Update, answers: List[UserAnswers], current_survey_id: int):
+    """Отправка данных в формате .csv"""
+    file = io.StringIO()
+    try:
+        fieldnames = ['Пользователь', 'Вопрос', 'Ответ']
+        writer = csv.DictWriter(file, fieldnames=fieldnames, delimiter=';')
+        writer.writeheader()
+        for user_answers in answers:
+            username = _get_username(user_answers)
+            for answer in user_answers['answers']:
+                question_text = answer['question']
+                answer_text = answer['answer']
+                writer.writerow({
+                    fieldnames[0]: username,
+                    fieldnames[1]: question_text,
+                    fieldnames[2]: answer_text
+                })
+        filename = "report-%s-%s.csv" % (current_survey_id, datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
+        doc = InputFile(file.getvalue(), filename=filename)
+
+        await update.effective_sender.send_document(doc)
+    except Exception as e:
+        await update.message.reply_text("%s\n\n\nОшибка: %s" % (ERROR_WHILE_MAKE_CSV, traceback.format_exc()))
+    finally:
+        file.close()
 
 
 async def _export_human_txt(update: Update, users_answers: List[UserAnswers], current_survey_id: int):
@@ -78,5 +109,6 @@ def export_json_command_handler() -> BaseHandler:
 
         await _export_json(update, answers, current_survey['id'])
         await _export_human_txt(update, answers, current_survey['id'])
+        await _export_csv(update, answers, current_survey['id'])
 
     return CommandHandler("export", handler)
