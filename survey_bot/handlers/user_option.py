@@ -26,7 +26,7 @@ def user_option_command_handler() -> BaseHandler:
         question_id = ctx.user_data['current_question_id']
         current_question: Question = survey['questions'][question_id]
 
-        if current_question['question_options'] is not None:
+        if current_question['question_options']:
             return
 
         answer: Answer = {

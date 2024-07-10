@@ -1,5 +1,6 @@
 import csv
 import io
+import traceback
 from datetime import datetime
 from asyncio import Lock
 from logging import getLogger
@@ -14,6 +15,7 @@ from survey_bot.utils.types import Survey
 logger = getLogger(__name__)
 
 FILE_IS_INVALID = "Данный файл невозможно обработать! Файл должен быть в формате .csv c разделителем ';'"
+SUCCESS_ADD_SURVEY = "Новый опрос добавлен"
 
 lock = Lock()
 
@@ -35,15 +37,17 @@ async def make_survey_from_csv(data: bytearray, update: Update) -> Survey:
             fieldnames[0] = fieldnames[0].replace('\ufeff', '')
         csv_reader.fieldnames = fieldnames
         for row in csv_reader:
+            question_name = row[fieldnames[0]]
+            question_options = list(filter(
+                lambda value: value.strip(' .-\t\n'),
+                [row[option] for option in fieldnames[1:]]
+            ))
             survey['questions'].append({
-                'question_name': row[fieldnames[0]],  # Вопрос
-                'question_options': list(filter(
-                    lambda value: value.strip(' .-\t\n'),
-                    [row[option] for option in fieldnames[1:]]
-                ))  # Варианты
+                'question_name': question_name,
+                'question_options': question_options or None  # Варианты
             })
     except Exception as e:
-        await update.message.reply_text("%s\n\n\nОшибка: %s" % (FILE_IS_INVALID, e))
+        await update.message.reply_text("%s\n\n\nОшибка: %s" % (FILE_IS_INVALID, traceback.format_exc()))
     finally:
         file.close()
     return survey
@@ -61,7 +65,10 @@ def file_processing_handler() -> BaseHandler:
             file = await update.message.document.get_file()
             data = await file.download_as_bytearray()
             survey = await make_survey_from_csv(data, update)
-            await insert_new_survey_and_update_current(survey)
+            result = await insert_new_survey_and_update_current(survey)
+
+            if result:
+                await update.effective_chat.send_message(SUCCESS_ADD_SURVEY)
 
     return MessageHandler(filters.Document.ALL, handler)
 
