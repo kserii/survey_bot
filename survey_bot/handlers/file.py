@@ -10,18 +10,20 @@ from telegram import Update
 
 from survey_bot.utils.decorators import check_permissions
 from survey_bot.utils.mongodb import insert_new_survey_and_update_current
+from survey_bot.utils.send_notification import send_notifications_all_users
 from survey_bot.utils.types import Survey
 
 logger = getLogger(__name__)
 
-FILE_IS_INVALID = "Данный файл невозможно обработать! Файл должен быть в формате .csv c разделителем ';'"
-SUCCESS_ADD_SURVEY = "Новый опрос добавлен"
+FILE_IS_INVALID_TEXT = "Данный файл невозможно обработать! Файл должен быть в формате .csv c разделителем ';'"
+SUCCESS_ADD_SURVEY_TEXT = "Новый опрос добавлен"
+NOTIFICATION_ADD_NEW_SURVEY_TEXT = 'Добавлен новый опрос, пожалуйста, пройдите его:\n/vote'
 
 lock = Lock()
 
 
-async def make_survey_from_csv(data: bytearray, update: Update) -> Survey:
-    """Возвращает опрос"""
+async def _make_survey_from_csv(data: bytearray, update: Update) -> Survey:
+    """Обрабатываетм .csv файл и возвращает объект опроса"""
     survey = {
         'id': -1,
         'questions': [],
@@ -47,35 +49,27 @@ async def make_survey_from_csv(data: bytearray, update: Update) -> Survey:
                 'question_options': question_options or None  # Варианты
             })
     except Exception as e:
-        await update.message.reply_text("%s\n\n\nОшибка: %s" % (FILE_IS_INVALID, traceback.format_exc()))
+        await update.message.reply_text("%s\n\nОшибка: %s" % (FILE_IS_INVALID_TEXT, traceback.format_exc()))
     finally:
         file.close()
     return survey
 
 
 def file_processing_handler() -> BaseHandler:
-    """Обработка файла"""
+    """Добавление файла с опросом"""
 
     @check_permissions(access_level='Admin')
     async def handler(update: Update, ctx: CallbackContext):
         async with lock:
-            logger.debug('file is: %s', update.message.document)
             if update.message.document.mime_type != 'text/csv':
                 return
             file = await update.message.document.get_file()
             data = await file.download_as_bytearray()
-            survey = await make_survey_from_csv(data, update)
+            survey = await _make_survey_from_csv(data, update)
             result = await insert_new_survey_and_update_current(survey)
 
             if result:
-                await update.effective_chat.send_message(SUCCESS_ADD_SURVEY)
+                await update.effective_chat.send_message(SUCCESS_ADD_SURVEY_TEXT)
+                await send_notifications_all_users(NOTIFICATION_ADD_NEW_SURVEY_TEXT, ctx)
 
     return MessageHandler(filters.Document.ALL, handler)
-
-
-def downloader(update, context):
-    context.bot.get_file(update.message.document).download()
-
-    # writing to a custom file
-    with open("custom/file.doc", 'wb') as f:
-        context.bot.get_file(update.message.document).download(out=f)

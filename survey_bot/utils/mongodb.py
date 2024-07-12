@@ -49,6 +49,13 @@ async def select_user(telegram_id: int) -> Optional[User]:
     return await TelegramUsersCollection.find_one({'id': telegram_id})
 
 
+async def select_all_users() -> Optional[List[User]]:
+    """Получение всех пользователей"""
+    users_cursor = TelegramUsersCollection.find()
+    users = [user async for user in users_cursor]
+    return users
+
+
 async def get_current_survey() -> Optional[Survey]:
     """Получить текущий опрос"""
     options = await get_options()
