@@ -44,6 +44,16 @@ async def insert_user(user: User):
         })
 
 
+async def set_admin_to_user(user: User):
+    await TelegramUsersCollection.update_one(
+        {'id': user['id']},
+        {'$set': {
+            'is_admin': True
+        }}
+    )
+
+
+
 async def select_user(telegram_id: int) -> Optional[User]:
     """Получение пользователя из базы данных по telegram id"""
     return await TelegramUsersCollection.find_one({'id': telegram_id})

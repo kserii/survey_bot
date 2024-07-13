@@ -7,6 +7,7 @@ from logging import getLogger
 
 from survey_bot.utils.mongodb import ping_server
 from survey_bot.utils.logger import init_logger
+from survey_bot.utils.secretkey import secret_update_task
 from survey_bot.const import BOT_TOKEN
 from survey_bot.handlers import __all__ as handlers
 
@@ -20,6 +21,7 @@ def main():
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(ping_server())
+    loop.create_task(secret_update_task(), name='secret-update')
 
     app = Application.builder().token(BOT_TOKEN).build()
 
