@@ -10,7 +10,7 @@ from telegram import Update
 
 from survey_bot.utils.decorators import check_permissions
 from survey_bot.utils.mongodb import insert_new_survey_and_update_current
-from survey_bot.utils.send_notification import send_notifications_all_users
+from survey_bot.utils.notifications import send_notifications_all_users
 from survey_bot.utils.types import Survey
 
 logger = getLogger(__name__)

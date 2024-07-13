@@ -20,7 +20,7 @@ async def next_message(update: Update, ctx: CallbackContext):
         ctx.user_data['current_question_id'] = question_id
 
         current_question: Question = survey['questions'][question_id]
-        keyboard = make_inline_keyboard(current_question, question_id)
+        keyboard = _make_inline_keyboard(current_question, question_id)
 
         await update.effective_chat.send_message(
             '[%s/%s]. %s%s' % (
@@ -37,7 +37,7 @@ async def next_message(update: Update, ctx: CallbackContext):
         await update.effective_chat.send_message(SURVEY_FINISH_TEXT)
 
 
-def make_inline_keyboard(question: Question, question_id: int) -> Optional[InlineKeyboardMarkup]:
+def _make_inline_keyboard(question: Question, question_id: int) -> Optional[InlineKeyboardMarkup]:
     """
     Возвращает inline клавиатуру с ответами для сообщения.
     Если вопрос преполагает не тест, а письменный ответ - фукнция вернет None
