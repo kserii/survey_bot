@@ -107,7 +107,7 @@ def export_json_command_handler() -> BaseHandler:
             await update.message.reply_text(NO_HAVE_ANSWERS_TEXT)
             return
 
-        await _export_json(update, answers, current_survey['id'])
+        # await _export_json(update, answers, current_survey['id'])
         await _export_human_txt(update, answers, current_survey['id'])
         await _export_csv(update, answers, current_survey['id'])
 
