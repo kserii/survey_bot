@@ -138,5 +138,12 @@ async def insert_new_survey_and_update_current(survey: Survey):
         max_doc = await SurveysCollection.find_one(sort=[('id', -1)])
         survey['id'] = max_doc['id'] + 1
     await SurveysCollection.insert_one(survey)
-    result = await OptionsCollection.update_one({'name': 'options'}, {"$set": {'active_survey': survey['id']}})
+    result = await update_active_survey(survey['id'])
     return result.modified_count
+
+
+async def update_active_survey(survey_id: Optional[int]):
+    result = await OptionsCollection.update_one(
+        {'name': 'options'},
+        {"$set": {'active_survey': survey_id}})
+    return result

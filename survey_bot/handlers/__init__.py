@@ -1,4 +1,5 @@
 from survey_bot.handlers.file import file_processing_handler
+from survey_bot.handlers.finish import finish_command_handler
 from survey_bot.handlers.foobar import foobar_command_handler
 from survey_bot.handlers.gatadmin import getadmin_command_handler
 from survey_bot.handlers.getkey import getkey_command_handler
@@ -17,5 +18,6 @@ __all__ = [
     file_processing_handler,
     foobar_command_handler,
     getadmin_command_handler,
-    getkey_command_handler
+    getkey_command_handler,
+    finish_command_handler
 ]
