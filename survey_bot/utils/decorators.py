@@ -15,8 +15,7 @@ def check_permissions(access_level: Literal['User', 'Admin'] = 'User'):
     def decorator(func: Callable[..., Awaitable]):
         @functools.wraps(func)
         async def wrapper(update: Update, ctx: CallbackContext, *args, **kwargs):
-            if 'user' not in ctx.user_data:
-                ctx.user_data['user'] = await select_user(update.effective_user.id)
+            ctx.user_data['user'] = await select_user(update.effective_user.id)
 
             if access_level == 'Admin' and not ctx.user_data['user']['is_admin']:
                 await update.message.reply_text(NO_HAVE_PERMISSION_TEXT)

@@ -53,7 +53,6 @@ async def set_admin_to_user(user: User):
     )
 
 
-
 async def select_user(telegram_id: int) -> Optional[User]:
     """Получение пользователя из базы данных по telegram id"""
     return await TelegramUsersCollection.find_one({'id': telegram_id})
