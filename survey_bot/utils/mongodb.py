@@ -139,7 +139,7 @@ async def select_all_answers_by_survey(survey_id: int) -> List[UserAnswers]:
 async def insert_new_survey_and_update_current(survey: Survey):
     if survey['id'] == -1:
         max_doc = await SurveysCollection.find_one(sort=[('id', -1)])
-        survey['id'] = max_doc['id'] + 1
+        survey['id'] = max_doc['id'] + 1 if max_doc else 0
     await SurveysCollection.insert_one(survey)
     result = await update_active_survey(survey['id'])
     return result.modified_count
