@@ -68,6 +68,9 @@ async def select_all_users() -> Optional[List[User]]:
 async def get_current_survey() -> Optional[Survey]:
     """Получить текущий опрос"""
     options = await get_options()
+    if not options:
+        return None
+
     survey: Survey = await SurveysCollection.find_one({
         'id': options['active_survey']
     })
