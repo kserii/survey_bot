@@ -17,7 +17,7 @@ def finish_command_handler() -> BaseHandler:
     @check_permissions(access_level='Admin')
     async def handler(update: Update, ctx: CallbackContext):
         result = await update_active_survey(None)
-        if result.modified_count:
+        if result:
             await update.message.reply_text(SURVEY_IS_FINISH)
 
     return CommandHandler("finish", handler)

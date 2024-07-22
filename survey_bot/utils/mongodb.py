@@ -146,7 +146,16 @@ async def insert_new_survey_and_update_current(survey: Survey):
 
 
 async def update_active_survey(survey_id: Optional[int]):
+    options = await get_options()
+
+    if not options:
+        result = await OptionsCollection.insert_one({
+            'name': 'options',
+            'active_survey': survey_id
+        })
+        return result.inserted_id
+
     result = await OptionsCollection.update_one(
         {'name': 'options'},
         {"$set": {'active_survey': survey_id}})
-    return result
+    return result.modified_count
