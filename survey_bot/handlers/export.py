@@ -17,6 +17,7 @@ logger = getLogger(__name__)
 
 NO_HAVE_ANSWERS_TEXT = "Пока нет ответов по данному опросу"
 ERROR_WHILE_MAKE_CSV = "В процессе создание .CSV произошла ошибка"
+DONT_HAVE_ACTIVE_SURVEYS = "Сейчас нет активных опросов"
 
 
 def _get_username(user_answers: UserAnswers) -> str:
@@ -101,6 +102,11 @@ def export_json_command_handler() -> BaseHandler:
     @check_permissions(access_level='Admin')
     async def handler(update: Update, ctx: CallbackContext):
         current_survey = await get_current_survey()
+
+        if not current_survey:
+            await update.message.reply_text(DONT_HAVE_ACTIVE_SURVEYS)
+            return
+
         answers = await select_all_answers_by_survey(survey_id=current_survey['id'])
 
         if not answers:
